@@ -1,0 +1,94 @@
+clusterName: k8s-cluster
+talosVersion: v1.12.4
+kubernetesVersion: v1.35.1
+endpoint: https://10.10.10.10:6443
+allowSchedulingOnControlPlanes: true
+talosImage: factory.talos.dev/metal-installer/88d1f7a5c4f1d3aba7df787c448c1d3d008ed29cfb34af53fa0df4336a56040b:v1.12.4
+
+# 📦 Image Extensions
+# Note: These extensions are baked into the factory.talos.dev image hash above.
+extensions:
+  - image: ghcr.io/siderolabs/qemu-guest-agent:v1.12.4
+  - image: ghcr.io/siderolabs/iscsi-tools:v1.12.4
+  - image: ghcr.io/siderolabs/util-linux-tools:v1.12.4
+
+# 🖥️ Node Definitions
+nodes:
+  - hostname: talos-node-1
+    ipAddress: 10.10.10.11
+    controlPlane: true
+    installDisk: /dev/sda
+    machineSpec:
+      mode: metal
+    networkInterfaces:
+      - interface: ens18
+        dhcp: false
+        addresses:
+          - 10.10.10.11/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.10.10.1
+        vip:
+          ip: 10.10.10.10
+
+  - hostname: talos-node-2
+    ipAddress: 10.10.10.12
+    controlPlane: true
+    installDisk: /dev/sda
+    machineSpec:
+      mode: metal
+    networkInterfaces:
+      - interface: ens18
+        dhcp: false
+        addresses:
+          - 10.10.10.12/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.10.10.1
+        vip:
+          ip: 10.10.10.10
+
+  - hostname: talos-node-3
+    ipAddress: 10.10.10.13
+    controlPlane: true
+    installDisk: /dev/sda
+    machineSpec:
+      mode: metal
+    networkInterfaces:
+      - interface: ens18
+        dhcp: false
+        addresses:
+          - 10.10.10.13/24
+        routes:
+          - network: 0.0.0.0/0
+            gateway: 10.10.10.1
+        vip:
+          ip: 10.10.10.10
+
+# 🔧 Machine Patches
+controlPlane:
+  patches:
+    - |-
+      machine:
+        network:
+          nameservers:
+            - 10.10.10.1
+            - 1.1.1.1
+        time:
+          servers:
+            - time.cloudflare.com
+        install:
+          wipe: true
+        # Extra mounts required for Longhorn storage
+        kubelet:
+          extraMounts:
+            - destination: /var/mnt/longhorn
+              type: bind
+              source: /var/mnt/longhorn
+              options:
+                - bind
+                - rshared
+                - rw
+
+cniConfig:
+  name: flannel

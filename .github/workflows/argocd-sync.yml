@@ -1,0 +1,23 @@
+name: ArgoCD Instant Sync
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify-argocd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v4
+        with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
+      - name: Trigger ArgoCD Webhook
+        run: |
+          curl -vSf -k --connect-timeout 10 -X POST \
+            -H "X-GitHub-Event: push" \
+            -H "Content-Type: application/json" \
+            -H "Host: argo.mracek.dev" \
+            --data-binary @"$GITHUB_EVENT_PATH" \
+            https://10.10.10.200/api/webhook

@@ -1,0 +1,4 @@
+apiVersion: v2
+name: n8n
+version: 1.0.0
+description: n8n Automation with CNPG and double ingress

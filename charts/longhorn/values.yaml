@@ -1,0 +1,16 @@
+longhorn:
+  defaultSettings:
+    # Custom mount path patched in Talos machine config
+    defaultDataPath: /var/mnt/longhorn
+    storageMinimalAvailablePercentage: 15
+  
+  # Ingress is disabled for security reasons
+  # To access the Longhorn UI locally, run:
+  #   kubectl port-forward --address 0.0.0.0 svc/longhorn-frontend 8080:80 -n longhorn-system
+  # Then open: http://10.10.10.5:8080
+  ingress:
+    enabled: false
+
+  preUpgradeChecker:
+    # Disabled to prevent deployment deadlocks when installing via ArgoCD
+    jobEnabled: false

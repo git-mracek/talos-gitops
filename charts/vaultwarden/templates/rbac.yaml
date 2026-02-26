@@ -1,0 +1,25 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: vaultwarden
+  name: allow-db-read-backup-secret
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  resourceNames: ["vaultwarden-backup-s3"]
+  verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: vaultwarden
+  name: allow-db-read-backup-secret-binding
+subjects:
+- kind: ServiceAccount
+  name: vaultwarden-db
+  namespace: vaultwarden
+roleRef:
+  kind: Role
+  name: allow-db-read-backup-secret
+  apiGroup: rbac.authorization.k8s.io

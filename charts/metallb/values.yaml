@@ -1,0 +1,6 @@
+metallb:
+  speaker:
+    hostNetwork: true
+    ignoreExcludeLB: true
+    frr:
+      enabled: false

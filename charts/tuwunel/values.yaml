@@ -1,0 +1,22 @@
+# Tuwunel (matrix) server
+image:
+  repository: "ghcr.io/matrix-construct/tuwunel"
+  tag: "v1.5.0"
+
+ingress:
+  host: "matrix.mracek.dev"
+  className: "nginx"
+  clusterIssuer: "letsencrypt-prod"
+
+storage:
+  size: "10Gi"
+  className: "longhorn"
+
+tuwunel:
+  serverName: "mracek.dev"
+  allowFederation: "false"
+  allowRegistration: "false"
+
+db:
+  s3Endpoint: "https://fsn1.your-objectstorage.com"
+  s3DestinationPath: "s3://mracek-k8s/tuwunel-backups/"

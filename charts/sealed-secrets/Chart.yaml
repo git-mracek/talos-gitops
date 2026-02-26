@@ -1,0 +1,8 @@
+apiVersion: v2
+name: sealed-secrets-wrapper
+description: A Helm chart wrapper for deploying the Bitnami Sealed Secrets controller
+version: 1.0.0
+dependencies:
+  - name: sealed-secrets
+    version: 2.18.1
+    repository: https://bitnami-labs.github.io/sealed-secrets

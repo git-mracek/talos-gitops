@@ -1,0 +1,128 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: n8n-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.storage.className }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.size }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: n8n
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: n8n
+  template:
+    metadata:
+      labels:
+        app: n8n
+    spec:
+      securityContext:
+        fsGroup: 1000
+        runAsUser: 1000
+        runAsGroup: 1000
+      containers:
+        - name: n8n
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 5678
+          resources:
+            limits:
+              memory: {{ .Values.resources.limits.memory | quote }}
+            requests:
+              memory: {{ .Values.resources.requests.memory | quote }}
+          env:
+            - name: N8N_HOST
+              value: {{ .Values.ingress.mainHost | quote }}
+            - name: WEBHOOK_URL
+              value: "https://{{ .Values.ingress.webhookHost }}/"
+            - name: N8N_EDITOR_BASE_URL
+              value: "https://{{ .Values.ingress.mainHost }}/"
+            - name: N8N_PROXY_HOPS
+              value: "1"
+            
+            - name: EXECUTIONS_DATA_PRUNE
+              value: "true"
+            - name: EXECUTIONS_DATA_MAX_AGE
+              value: "48"
+            - name: EXECUTIONS_DATA_SAVE_ON_SUCCESS
+              value: "none"
+            - name: N8N_DEFAULT_BINARY_DATA_MODE
+              value: "filesystem"
+            - name: NODE_OPTIONS
+              value: "--max-old-space-size=1536"
+
+            - name: DB_TYPE
+              value: "postgresdb"
+            - name: DB_POSTGRESDB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-db-app
+                  key: host
+            - name: DB_POSTGRESDB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-db-app
+                  key: port
+            - name: DB_POSTGRESDB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-db-app
+                  key: dbname
+            - name: DB_POSTGRESDB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-db-app
+                  key: user
+            - name: DB_POSTGRESDB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-db-app
+                  key: password
+
+            - name: N8N_EMAIL_MODE
+              value: "smtp"
+            - name: N8N_SMTP_HOST
+              value: "wes1-smtp.wedos.net"
+            - name: N8N_SMTP_PORT
+              value: "587"
+            - name: N8N_SMTP_SSL
+              value: "false"
+            - name: N8N_SMTP_USER
+              value: "n8n@mracek.dev"
+            - name: N8N_SMTP_SENDER
+              value: "n8n@mracek.dev"
+            - name: N8N_USER_MANAGEMENT_EMAILS_MODE
+              value: "smtp"
+            - name: N8N_SMTP_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-smtp-auth
+                  key: SMTP_PASSWORD
+          volumeMounts:
+            - name: data
+              mountPath: /home/node/.n8n
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: n8n-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: n8n
+spec:
+  selector:
+    app: n8n
+  ports:
+    - port: 5678
+      targetPort: 5678

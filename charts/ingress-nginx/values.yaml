@@ -1,0 +1,8 @@
+ingress-nginx:
+  controller:
+    service:
+      type: LoadBalancer
+      externalTrafficPolicy: Cluster
+      annotations:
+        metallb.io/address-pool: vip-pool
+        metallb.io/loadBalancerIPs: 10.10.10.200

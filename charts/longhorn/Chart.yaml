@@ -1,0 +1,8 @@
+apiVersion: v2
+name: longhorn-setup
+description: A Helm chart wrapper for deploying Longhorn distributed block storage
+version: 1.0.0
+dependencies:
+  - name: longhorn
+    version: 1.11.0
+    repository: https://charts.longhorn.io

@@ -1,0 +1,22 @@
+image:
+  repository: "docker.n8n.io/n8nio/n8n"
+  tag: "2.10.1"
+
+ingress:
+  mainHost: "n8n.mracek.dev"
+  webhookHost: "webhook.mracek.dev"
+  className: "nginx"
+  clusterIssuer: "letsencrypt-prod"
+
+storage:
+  size: "10Gi"
+  className: "longhorn"
+
+db:
+  storageSize: "10Gi"
+
+resources:
+  limits:
+    memory: "2Gi"
+  requests:
+    memory: "512Mi"

@@ -1,0 +1,30 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: tuwunel-db
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:16
+  
+  storage:
+    size: 5Gi
+    storageClass: {{ .Values.storage.className }}
+
+  backup:
+    barmanObjectStore:
+      destinationPath: {{ .Values.db.s3DestinationPath | quote }}
+      endpointURL: {{ .Values.db.s3Endpoint | quote }}
+      s3Credentials:
+        accessKeyId:
+          name: hetzner-s3-creds
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: hetzner-s3-creds
+          key: SECRET_ACCESS_KEY
+      wal:
+        compression: gzip
+
+  bootstrap:
+    initdb:
+      database: tuwunel
+      owner: tuwunel

@@ -1,0 +1,4 @@
+creation_rules:
+  - path_regex: talsecret\.yaml$
+    age: >-
+      age12cnwp4l7w3paht063dev4zy6v663hv5wxqjrm7y00l3278e6f9yql2zxff

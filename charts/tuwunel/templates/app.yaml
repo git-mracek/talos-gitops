@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tuwunel-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.storage.className }}
+  resources:
+    requests:
+      storage: {{ .Values.storage.size }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tuwunel
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: tuwunel
+  template:
+    metadata:
+      labels:
+        app: tuwunel
+    spec:
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: tuwunel
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          securityContext:
+            runAsUser: 1000
+            runAsGroup: 1000
+          ports:
+            - containerPort: 6167
+          env:
+            - name: TUWUNEL_SERVER_NAME
+              value: {{ .Values.tuwunel.serverName | quote }}
+            - name: TUWUNEL_ALLOW_FEDERATION
+              value: {{ .Values.tuwunel.allowFederation | quote }}
+            - name: TUWUNEL_ALLOW_REGISTRATION
+              value: {{ .Values.tuwunel.allowRegistration | quote }}
+            - name: TUWUNEL_DATABASE_PATH
+              value: "/data"
+            - name: TUWUNEL_PORT
+              value: "6167"
+            - name: TUWUNEL_ADDRESS
+              value: "0.0.0.0"
+            - name: TUWUNEL_MAX_REQUEST_SIZE
+              value: "50000000"
+            
+            - name: TUWUNEL_REGISTRATION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: tuwunel-secrets
+                  key: registration-token
+                  
+            - name: TUWUNEL_DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: tuwunel-db-app
+                  key: uri
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: tuwunel-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tuwunel
+spec:
+  selector:
+    app: tuwunel
+  ports:
+    - port: 80
+      targetPort: 6167

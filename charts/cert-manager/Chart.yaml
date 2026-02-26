@@ -1,0 +1,8 @@
+apiVersion: v2
+name: cert-manager-wrapper
+description: A Helm chart wrapper for Cert-Manager including Cloudflare ClusterIssuer
+version: 1.0.0
+dependencies:
+  - name: cert-manager
+    version: v1.19.4
+    repository: https://charts.jetstack.io

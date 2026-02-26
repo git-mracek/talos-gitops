@@ -1,0 +1,26 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: vaultwarden-db
+spec:
+  instances: 3
+  bootstrap:
+    initdb:
+      database: vaultwarden
+      owner: vaultwarden
+  storage:
+    size: 5Gi
+  backup:
+    retentionPolicy: "30d"
+    barmanObjectStore:
+      destinationPath: s3://mracek-k8s/vaultwarden-backups/
+      endpointURL: https://fsn1.your-objectstorage.com
+      wal:
+        compression: gzip
+      s3Credentials:
+        accessKeyId:
+          name: vaultwarden-backup-s3
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: vaultwarden-backup-s3
+          key: SECRET_ACCESS_KEY
