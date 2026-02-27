@@ -1,6 +1,6 @@
 # ☸️ Kubernetes GitOps Infrastructure
 
-This repository contains the declarative GitOps state of my bare-metal Kubernetes cluster running on a dedicated server (Hetzner) virtualized via Proxmox. 
+This repository contains the declarative GitOps state of bare-metal Kubernetes cluster running on a dedicated server (Hetzner) virtualized via Proxmox. 
 
 The entire infrastructure and all applications are managed via **ArgoCD** using the "App of Apps" pattern, ensuring that the cluster state always strictly mirrors this Git repository.
 
@@ -68,7 +68,7 @@ graph TD
 | `10.10.10.13`                | `talos-node-3`  | CP              | Control Plane Node 3.                                       |
 | **Applications (MetalLB)** |                 |                 |                                                             |
 | `10.10.10.200`               | **Ingress VIP** | **Ingress** | Main ingress for HTTP/HTTPS (Websites, Webhooks).           |
-| `10.10.10.201`               | *DB Access* | VIP             | Direct TCP access to the HA database (optional).            |
+| `10.10.10.201`               | *DB Access* | VIP             | Direct TCP access to the HA database (currently not configured).            |
 | `10.10.10.202` - `.250`      | *Pool* | LoadBalancer    | Dynamic pool for standard LoadBalancer services.            |
 | `10.10.10.100` - `.199`      | *DHCP* | Clients         | DHCP range for temporary VMs and VPN clients.               |
 
@@ -107,8 +107,6 @@ auto eno1
 iface eno1 inet static
     address <PUBLIC_IP>/26
     gateway <PUBLIC_GATEWAY>
-    # Security: Drop SSH on the public interface (access only via Tailscale/KVM)
-    # post-up iptables -I INPUT -p tcp --dport 22 -i eno1 -j DROP
 
 # --- WAN Link (Proxmox <-> OPNsense connection) ---
 # Network: 192.168.100.0/30
