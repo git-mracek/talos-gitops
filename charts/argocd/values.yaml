@@ -1,0 +1,6 @@
+configs:
+  cm:
+    resource.customizations.ignoreDifferences.argoproj.io_Application: |
+      jsonPointers:
+        - /metadata/finalizers
+        - /metadata/managedFields
