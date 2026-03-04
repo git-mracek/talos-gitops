@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opnsense-exporter
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opnsense-exporter
+  template:
+    metadata:
+      labels:
+        app: opnsense-exporter
+    spec:
+      containers:
+        - name: exporter
+          image: ghcr.io/athennamind/opnsense-exporter:0.0.13
+          ports:
+            - containerPort: 8080
+              name: metrics
+          env:
+            - name: OPNSENSE_URL
+              value: "https://router.mracek.dev" 
+            - name: OPNSENSE_INSECURE
+              value: "false" 
+            - name: OPNSENSE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: opnsense-api-key
+                  key: api_key
+            - name: OPNSENSE_API_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: opnsense-api-key
+                  key: api_secret

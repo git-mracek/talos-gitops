@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: proxmox-exporter
+  namespace: monitoring
+  labels:
+    app: proxmox-exporter
+spec:
+  endpoints:
+    - port: metrics
+      path: /pve
+      interval: 30s
+      params:
+        target:
+          - "neo.mracek.dev"
+      relabelings:
+        - sourceLabels: [__param_target]
+          targetLabel: instance
+  selector:
+    matchLabels:
+      app: proxmox-exporter
