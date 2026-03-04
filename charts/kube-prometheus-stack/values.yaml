@@ -14,11 +14,21 @@ kube-prometheus-stack:
 
   # Grafana za Tailscale
   grafana:
+    admin:
+      existingSecret: "grafana-admin-credentials"
+      userKey: admin-user
+      passwordKey: admin-password
     ingress:
       enabled: true
       ingressClassName: nginx
+      annotations:
+        cert-manager.io/cluster-issuer: "letsencrypt-prod"
       hosts:
         - grafana.mracek.dev
+      tls:
+        - secretName: grafana-tls
+          hosts:
+            - grafana.mracek.dev
     sidecar:
       dashboards:
         enabled: true
