@@ -5,6 +5,7 @@ metadata:
   namespace: monitoring
   labels:
     app: proxmox-exporter
+    release: kube-prometheus-stack
 spec:
   endpoints:
     - port: metrics
