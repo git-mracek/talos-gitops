@@ -2,8 +2,11 @@ kube-prometheus-stack:
   prometheus:
     prometheusSpec:
       serviceMonitorSelectorNilUsesHelmValues: false
+      serviceMonitorSelector: {}
       podMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelector: {}
       ruleSelectorNilUsesHelmValues: false
+      ruleSelector: {}
       secrets:
         - etcd-client-cert
 
