@@ -1,4 +1,6 @@
 kube-prometheus-stack:
+  kubeEtcd:
+    enabled: false
   prometheus:
     prometheusSpec:
       serviceMonitorSelectorNilUsesHelmValues: false
@@ -9,6 +11,13 @@ kube-prometheus-stack:
       ruleSelector: {}
       secrets:
         - etcd-client-cert
+      additionalScrapeConfigs:
+        - job_name: "talos-etcd"
+          static_configs:
+            - targets:
+              - "10.10.10.11:2381"
+              - "10.10.10.12:2381"
+              - "10.10.10.13:2381"
 
   defaultRules:
     rules:
@@ -42,18 +51,3 @@ kube-prometheus-stack:
     enabled: true
   nodeExporter:
     hostRootfs: /rootfs
-
-  # etcd monitoring pro Talos
-  kubeEtcd:
-    enabled: true
-    endpoints:
-      - 10.10.10.11
-      - 10.10.10.12
-      - 10.10.10.13
-    serviceMonitor:
-      scheme: https
-      insecureSkipVerify: false
-      serverName: localhost
-      caFile: /etc/prometheus/secrets/etcd-client-cert/ca.crt
-      certFile: /etc/prometheus/secrets/etcd-client-cert/etcd-client.crt
-      keyFile: /etc/prometheus/secrets/etcd-client-cert/etcd-client.key
