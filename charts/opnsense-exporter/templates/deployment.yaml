@@ -16,14 +16,17 @@ spec:
       containers:
         - name: exporter
           image: ghcr.io/athennamind/opnsense-exporter:0.0.13
+          args:
+            - "--opnsense.protocol=https"
+            - "--opnsense.address=router.mracek.dev"
+            - "--exporter.instance-label=router.mracek.dev"
+            - "--opnsense.api-key=$(OPNSENSE_API_KEY)"
+            - "--opnsense.api-secret=$(OPNSENSE_API_SECRET)"
+            - "--opnsense.insecure=false"
           ports:
             - containerPort: 8080
               name: metrics
           env:
-            - name: OPNSENSE_URL
-              value: "https://router.mracek.dev" 
-            - name: OPNSENSE_INSECURE
-              value: "false" 
             - name: OPNSENSE_API_KEY
               valueFrom:
                 secretKeyRef:
