@@ -41,6 +41,11 @@ spec:
                 secretKeyRef:
                   name: vaultwarden-db-app
                   key: uri
+            - name: ADMIN_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vaultwarden-admin
+                  key: ADMIN_TOKEN
           volumeMounts:
             - name: data
               mountPath: /data
