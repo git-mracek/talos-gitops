@@ -1,17 +1,13 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: vaultwarden
+  name: vaultwarden-admin
   annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/server-snippet: |
-      location ~ ^/admin {
-        return 404;
-      }
+    cert-manager.io/cluster-issuer: letsencrypt-prod 
 spec:
   ingressClassName: nginx
   rules:
-    - host: vault.mracek.dev
+    - host: vault-admin.mracek.dev
       http:
         paths:
           - path: /
@@ -23,5 +19,5 @@ spec:
                   number: 80
   tls:
     - hosts:
-        - vault.mracek.dev
-      secretName: vaultwarden-tls
+        - vault-admin.mracek.dev
+      secretName: vaultwarden-admin-tls
