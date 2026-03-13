@@ -46,6 +46,26 @@ spec:
                 secretKeyRef:
                   name: vaultwarden-admin
                   key: ADMIN_TOKEN
+
+            # --- SMTP configuration ---
+            - name: SMTP_HOST
+              value: "wes1-smtp.wedos.net"
+            - name: SMTP_PORT
+              value: "587"
+            - name: SMTP_SECURITY
+              value: "starttls"
+            - name: SMTP_FROM
+              value: "vault@mracek.dev"
+            - name: SMTP_FROM_NAME
+              value: "Lukas Mracek - VAULT"
+            - name: SMTP_USERNAME
+              value: "vault@mracek.dev"
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: vaultwarden-smtp-secret
+                  key: SMTP_PASSWORD
+
           volumeMounts:
             - name: data
               mountPath: /data
