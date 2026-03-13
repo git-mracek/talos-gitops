@@ -4,16 +4,19 @@ metadata:
   name: vaultwarden
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/server-snippet: |
-      location ~ ^/admin {
-        return 404;
-      }
 spec:
   ingressClassName: nginx
   rules:
     - host: vault.mracek.dev
       http:
         paths:
+          - path: /admin
+            pathType: Prefix
+            backend:
+              service:
+                name: non-existing-service
+                port:
+                  number: 80
           - path: /
             pathType: Prefix
             backend:
