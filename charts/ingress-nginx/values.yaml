@@ -1,5 +1,7 @@
 ingress-nginx:
   controller:
+    config:
+      allow-snippet-annotations: "true"
     service:
       type: LoadBalancer
       externalTrafficPolicy: Cluster
