@@ -4,5 +4,5 @@ description: A Helm chart wrapper for deploying Longhorn distributed block stora
 version: 1.0.0
 dependencies:
   - name: longhorn
-    version: 1.11.0
+    version: 1.11.1
     repository: https://charts.longhorn.io
