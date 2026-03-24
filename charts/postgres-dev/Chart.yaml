@@ -1,0 +1,4 @@
+apiVersion: v2
+name: postgres-dev
+version: 1.0.0
+description: Postgres Dev Cluster
