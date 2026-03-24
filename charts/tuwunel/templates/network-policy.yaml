@@ -1,0 +1,138 @@
+# =============================================================
+# NetworkPolicies pro namespace: tuwunel
+# =============================================================
+
+# 1. Výchozí pravidlo – zahoď veškerý nevyžádaný provoz
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: tuwunel
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+# 2. Povol DNS (bez toho nefunguje žádné name resolution)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: tuwunel
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+
+# 3. Povol komunikaci uvnitř namespace (app <-> db)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-intra-namespace
+  namespace: tuwunel
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector: {}
+  egress:
+    - to:
+        - podSelector: {}
+
+# 4. Povol ingress z ingress-nginx (pouze na app pod, ne na DB)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-nginx
+  namespace: tuwunel
+spec:
+  podSelector:
+    matchLabels:
+      app: tuwunel
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+
+# 5. Povol Prometheus scraping z monitoring namespace
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring-scrape
+  namespace: tuwunel
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 9187
+          protocol: TCP
+        - port: 8080
+          protocol: TCP
+
+# 6. Povol CNPG operátoru přístup k DB podům
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cnpg-operator
+  namespace: tuwunel
+spec:
+  podSelector:
+    matchLabels:
+      cnpg.io/podRole: instance
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: cnpg-system
+
+# POZOR: tuwunel je izolovaný Matrix server (není připojen do federation sítě).
+# App záměrně NEMÁ egress na internet.
+# Pokud by Matrix vyžadoval nějaké odchozí spojení (push notifikace, TURN server),
+# odkomentuj níže:
+#
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-app-internet-egress
+#   namespace: tuwunel
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app: tuwunel
+#   policyTypes:
+#     - Egress
+#   egress:
+#     - ports:
+#         - port: 443
+#           protocol: TCP
+#         - port: 8448    # Matrix federation port (pokud bys někdy povolil)
+#           protocol: TCP
+
