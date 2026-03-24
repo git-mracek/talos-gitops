@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-dev-lb
+  namespace: postgres-dev
+  annotations:
+    # Fixní IP z tvého rezervovaného rozsahu
+    metallb.universe.tf/loadBalancerIPs: 10.10.10.201
+spec:
+  type: LoadBalancer
+  # Pouze primary (read-write) node
+  selector:
+    cnpg.io/cluster: postgres-dev
+    role: primary
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+  # LoadBalancerSourceRanges omezuje přístup pouze z Tailscale subnetu
+  # Tailscale CGNAT rozsah: 100.64.0.0/10
+  # Tvůj LAN subnet: 10.10.10.0/24
+  loadBalancerSourceRanges:
+    - 100.64.0.0/10    # Tailscale klienti
+    - 10.10.10.0/24    # Lokální LAN (workstation, atd.)
+

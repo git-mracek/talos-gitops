@@ -1,0 +1,41 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres-dev
+  namespace: postgres-dev
+spec:
+  instances: 3
+  imageName: ghcr.io/cloudnative-pg/postgresql:18
+
+  # Dev cluster – menší resources než produkce
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+  storage:
+    size: 10Gi
+    storageClass: longhorn
+
+  postgresql:
+    parameters:
+      max_connections: "50"
+      shared_buffers: "64MB"
+      # Dev nastavení – více logování pro debugování
+      log_statement: "all"
+      log_min_duration_statement: "0"
+
+  # Superuser secret – bude vytvořen jako SealedSecret
+  # CNPG automaticky vytvoří secret postgres-dev-superuser
+  # s klíči username a password
+
+  bootstrap:
+    initdb:
+      database: devdb
+      owner: devuser
+      secret:
+        name: postgres-dev-user-secret
+
