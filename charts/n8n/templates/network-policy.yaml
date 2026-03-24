@@ -1,0 +1,134 @@
+# =============================================================
+# NetworkPolicies pro namespace: n8n
+# =============================================================
+
+# 1. Výchozí pravidlo – zahoď veškerý nevyžádaný provoz
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: n8n
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+# 2. Povol DNS (bez toho nefunguje žádné name resolution)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: n8n
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+
+# 3. Povol komunikaci uvnitř namespace (app <-> db)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-intra-namespace
+  namespace: n8n
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector: {}
+  egress:
+    - to:
+        - podSelector: {}
+
+# 4. Povol ingress z ingress-nginx (pouze na app pod, ne na DB)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-nginx
+  namespace: n8n
+spec:
+  podSelector:
+    matchLabels:
+      app: n8n
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+
+# 5. Povol Prometheus scraping z monitoring namespace (port 9187 = cnpg exporter)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring-scrape
+  namespace: n8n
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 9187
+          protocol: TCP
+        - port: 8080
+          protocol: TCP
+
+# 6. Povol CNPG operátoru přístup k DB podům
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cnpg-operator
+  namespace: n8n
+spec:
+  podSelector:
+    matchLabels:
+      cnpg.io/podRole: instance
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: cnpg-system
+
+# 7. Povol n8n app egress na internet (workflows volají externí API)
+#    DB pody internet nepotřebují – selektujem pouze app pod
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-app-internet-egress
+  namespace: n8n
+spec:
+  podSelector:
+    matchLabels:
+      app: n8n
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 80
+          protocol: TCP
+        - port: 443
+          protocol: TCP
