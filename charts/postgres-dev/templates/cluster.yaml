@@ -49,4 +49,6 @@ spec:
       owner: devuser
       secret:
         name: postgres-dev-user-secret
+      postInitSQL:
+        - ALTER ROLE devuser CREATEDB
 
