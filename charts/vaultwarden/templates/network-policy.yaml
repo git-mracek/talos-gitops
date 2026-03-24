@@ -1,0 +1,136 @@
+# =============================================================
+# NetworkPolicies pro namespace: vaultwarden
+# =============================================================
+
+# 1. Výchozí pravidlo – zahoď veškerý nevyžádaný provoz
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: vaultwarden
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+# 2. Povol DNS (bez toho nefunguje žádné name resolution)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: vaultwarden
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+
+# 3. Povol komunikaci uvnitř namespace (app <-> db)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-intra-namespace
+  namespace: vaultwarden
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - podSelector: {}
+  egress:
+    - to:
+        - podSelector: {}
+
+# 4. Povol ingress z ingress-nginx (pouze na app pod, ne na DB)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-nginx
+  namespace: vaultwarden
+spec:
+  podSelector:
+    matchLabels:
+      app: vaultwarden
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+
+# 5. Povol Prometheus scraping z monitoring namespace
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring-scrape
+  namespace: vaultwarden
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 9187
+          protocol: TCP
+        - port: 8080
+          protocol: TCP
+
+# 6. Povol CNPG operátoru přístup k DB podům
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cnpg-operator
+  namespace: vaultwarden
+spec:
+  podSelector:
+    matchLabels:
+      cnpg.io/podRole: instance
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: cnpg-system
+
+# POZOR: vaultwarden app záměrně NEMÁ egress na internet.
+# Vaultwarden nepotřebuje volat žádná externí API.
+# Pokud by to způsobilo problémy (např. HaveIBeenPwned integrace),
+# odkomentuj níže:
+#
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: allow-app-internet-egress
+#   namespace: vaultwarden
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app: vaultwarden
+#   policyTypes:
+#     - Egress
+#   egress:
+#     - ports:
+#         - port: 443
+#           protocol: TCP
+
