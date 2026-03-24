@@ -68,7 +68,7 @@ graph TD
 | `10.10.10.13`                | `talos-node-3`  | CP              | Control Plane Node 3.                                       |
 | **Applications (MetalLB)** |                 |                 |                                                             |
 | `10.10.10.200`               | **Ingress VIP** | **Ingress** | Main ingress for HTTP/HTTPS (Websites, Webhooks).           |
-| `10.10.10.201`               | *DB Access* | VIP             | Direct TCP access to the HA database (currently not configured).            |
+| `10.10.10.201`               | *DB Access* | VIP             | Direct TCP access to the HA database.            |
 | `10.10.10.202` - `.250`      | *Pool* | LoadBalancer    | Dynamic pool for standard LoadBalancer services.            |
 | `10.10.10.100` - `.199`      | *DHCP* | Clients         | DHCP range for temporary VMs and VPN clients.               |
 
