@@ -28,6 +28,15 @@ spec:
       log_statement: "all"
       log_min_duration_statement: "0"
 
+  managed:
+    roles:
+      - name: devuser
+        ensure: present
+        login: true
+        createDb: true
+        passwordSecret:
+          name: postgres-dev-user-secret
+
   # Superuser secret – bude vytvořen jako SealedSecret
   # CNPG automaticky vytvoří secret postgres-dev-superuser
   # s klíči username a password
