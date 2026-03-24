@@ -34,6 +34,8 @@ spec:
         ensure: present
         login: true
         createDb: true
+        inherit: true
+        connectionLimit: -1
         passwordSecret:
           name: postgres-dev-user-secret
 
