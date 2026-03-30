@@ -51,18 +51,11 @@ spec:
               value: "0.0.0.0"
             - name: TUWUNEL_MAX_REQUEST_SIZE
               value: "50000000"
-            
             - name: TUWUNEL_REGISTRATION_TOKEN
               valueFrom:
                 secretKeyRef:
                   name: tuwunel-secrets
                   key: registration-token
-                  
-            - name: TUWUNEL_DATABASE_URL
-              valueFrom:
-                secretKeyRef:
-                  name: tuwunel-db-app
-                  key: uri
           volumeMounts:
             - name: data
               mountPath: /data
