@@ -112,8 +112,9 @@ spec:
             matchLabels:
               kubernetes.io/metadata.name: cnpg-system
 
-# 7. Povol n8n app egress na internet (workflows volají externí API)
-#    DB pody internet nepotřebují – selektujem pouze app pod
+# 7. Povol n8n app egress na internet
+# Povolujeme 80/443 (pro volání externích webhooků a API)
+# Povolujeme 587 (pro odchozí SMTP maily přes Wedos)
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -130,5 +131,25 @@ spec:
     - ports:
         - port: 80
           protocol: TCP
+        - port: 443
+          protocol: TCP
+        - port: 587    # Pridano pro SMTP
+          protocol: TCP
+
+# 8. Povol DB podum komunikaci na internet (nutne pro S3 zalohy Barman)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-db-s3-egress
+  namespace: n8n
+spec:
+  podSelector:
+    matchLabels:
+      cnpg.io/cluster: n8n-db
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
         - port: 443
           protocol: TCP

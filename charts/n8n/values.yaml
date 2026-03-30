@@ -16,7 +16,21 @@ db:
   storageSize: "10Gi"
 
 resources:
-  limits:
-    memory: "2Gi"
   requests:
+    cpu: 250m
     memory: "512Mi"
+  limits:
+    cpu: 1000m
+    memory: "2Gi"
+
+probes:
+  liveness:
+    initialDelaySeconds: 15
+    periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 3
+  readiness:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 3
