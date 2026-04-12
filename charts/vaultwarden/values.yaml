@@ -1,6 +1,6 @@
 image:
   repository: "vaultwarden/server"
-  tag: "1.35.4"
+  tag: "1.35.6"
 
 resources:
   requests:
