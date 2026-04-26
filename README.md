@@ -14,6 +14,24 @@ The entire infrastructure and all applications are managed via **ArgoCD** using 
 
 ---
 
+## 📁 Repository Structure (App of Apps)
+
+This repository strictly follows the **ArgoCD App of Apps** pattern. The state of the cluster is declaratively defined and split into logical components:
+
+```text
+.
+├── apps/              # ArgoCD Application manifests (The root applications pointing to the charts)
+├── charts/            # Local Helm charts containing the actual Kubernetes resources
+│   ├── infrastructure # (e.g., ingress-nginx, cert-manager, longhorn, metallb)
+│   └── workloads      # (e.g., n8n, vaultwarden, postgres-dev)
+├── talos/             # Talos OS configuration and SOPS-encrypted cluster secrets
+├── bootstrap.yaml     # The root ArgoCD application used to bootstrap the entire cluster
+├── pub-cert.pem       # Public certificate for Kubeseal (Sealed Secrets)
+└── renovate.json      # Automated dependency update configuration
+```
+
+---
+
 ## 🗺️ Network Topology
 
 The architecture is designed to be **GitOps ready** and utilizes a strict **Double-NAT** topology for maximum isolation between public traffic and the internal network. 
@@ -98,17 +116,28 @@ The `/etc/network/interfaces` file handles routing between the physical network 
 * Proxmox holds the `.2` IP on `vmbr1` but **does not** have a gateway configured there (it uses `eno1` as its default route).
 
 ```bash
+source /etc/network/interfaces.d/*
+
 auto lo
 iface lo inet loopback
 
 iface lo inet6 loopback
 
+# --- 1. PUBLIC INTERFACE (Internet) ---
 auto eno1
 iface eno1 inet static
     address <PUBLIC_IP>/26
     gateway <PUBLIC_GATEWAY>
+    
+    # Static route for Hetzner networking
+    up route add -net <PUBLIC_SUBNET> netmask 255.255.255.192 gw <PUBLIC_GATEWAY> dev eno1
 
-# --- WAN Link (Proxmox <-> OPNsense connection) ---
+# --- IPv6 CONFIGURATION (DISABLED) ---
+# iface eno1 inet6 static
+#	address <PUBLIC_IPV6>/64
+#	gateway fe80::1
+
+# --- 2. WAN LINK (Proxmox <-> OPNsense connection) ---
 # Network: 192.168.100.0/30
 # .1 = Proxmox Host
 # .2 = OPNsense WAN
@@ -121,30 +150,33 @@ iface vmbr0 inet static
     
     # Enable IP forwarding in the kernel
     post-up   echo 1 > /proc/sys/net/ipv4/ip_forward
-    
+
     # 1. OUTBOUND NAT (Masquerade)
-    # Everything leaving OPNsense (.100.2) is masqueraded behind the server's public IP
     post-up   iptables -t nat -A POSTROUTING -s '192.168.100.0/30' -o eno1 -j MASQUERADE
     post-down iptables -t nat -D POSTROUTING -s '192.168.100.0/30' -o eno1 -j MASQUERADE
-    
-    # 2. INBOUND PORT FORWARDING (Internet traffic)
-    # HTTP (80) -> OPNsense
+
+    # 2. INBOUND PORT FORWARDING (Internet traffic -> OPNsense)
+    # HTTP (80)
     post-up   iptables -t nat -A PREROUTING -i eno1 -p tcp --dport 80 -j DNAT --to 192.168.100.2:80
     post-down iptables -t nat -D PREROUTING -i eno1 -p tcp --dport 80 -j DNAT --to 192.168.100.2:80
     
-    # HTTPS (443) -> OPNsense
+    # HTTPS (443)
     post-up   iptables -t nat -A PREROUTING -i eno1 -p tcp --dport 443 -j DNAT --to 192.168.100.2:443
     post-down iptables -t nat -D PREROUTING -i eno1 -p tcp --dport 443 -j DNAT --to 192.168.100.2:443
 
-# --- LAN Switch (Internal Network) ---
+    # Minecraft Bedrock (UDP 19132)
+    post-up   iptables -t nat -A PREROUTING -i eno1 -p udp --dport 19132 -j DNAT --to 192.168.100.2:19132
+    post-down iptables -t nat -D PREROUTING -i eno1 -p udp --dport 19132 -j DNAT --to 192.168.100.2:19132
+
+# --- 3. LAN SWITCH (Internal Network) ---
 auto vmbr1
 iface vmbr1 inet static
     address 10.10.10.2/24
     bridge-ports none
     bridge-stp off
     bridge-fd 0
+    comment "LAN Network"
     # Gateway is intentionally omitted here. Proxmox uses eno1 as the default gateway.
-    # The 10.10.10.2 IP is strictly for management accessibility from the LAN/VPN.
 ```
 
 ## 🚦 Packet Flow
