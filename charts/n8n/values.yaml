@@ -1,6 +1,6 @@
 image:
   repository: "docker.n8n.io/n8nio/n8n"
-  tag: "2.20.5"
+  tag: "2.21.3"
 
 ingress:
   mainHost: "n8n.mracek.dev"
