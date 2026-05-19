@@ -1,0 +1,16 @@
+gitlab-runner:
+  gitlabUrl: "https://gitlab.com/"
+  
+  rbac:
+    create: true
+
+  runners:
+    secret: "gitlab-runner-auth"
+    
+    config: |
+      [[runners]]
+        [runners.kubernetes]
+          namespace = "{{.Release.Namespace}}"
+          image = "alpine:latest"
+          privileged = false
+          service_account_overwrite_allowed = ""
