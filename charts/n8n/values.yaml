@@ -14,7 +14,7 @@ storage:
 
 storageEncrypted:
   size: "10Gi"
-  classname: "longhorn-crypto"
+  className: "longhorn-crypto"
 
 db:
   storageSize: "10Gi"
