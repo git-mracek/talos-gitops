@@ -70,6 +70,10 @@ controlPlane:
   patches:
     - |-
       machine:
+        kernel:
+          modules:
+            - name: dm_crypt
+            - name: crypto_user
         network:
           nameservers:
             - 10.10.10.1
