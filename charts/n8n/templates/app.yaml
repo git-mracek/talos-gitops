@@ -10,12 +10,24 @@ spec:
     requests:
       storage: {{ .Values.storage.size }}
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: n8n-data-encrypted
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ .Values.storageEncrypted.className }}
+  resources:
+    requests:
+      storage: {{ .Values.storageEncrypted.size }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: n8n
 spec:
-  replicas: 1
+  replicas: 0
   strategy:
     type: Recreate
   selector:
