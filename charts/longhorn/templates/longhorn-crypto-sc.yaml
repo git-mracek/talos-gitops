@@ -10,4 +10,4 @@ parameters:
   fromBackup: ""
   encrypted: "true"
   cryptoSecretName: "longhorn-crypto"
-  cryptoSecretNamespace: {{ printf "${pvc.namespace}" | quote }}
+  cryptoSecretNamespace: "longhorn-system"
