@@ -56,6 +56,8 @@ spec:
           env:
             - name: N8N_HOST
               value: {{ .Values.ingress.mainHost | quote }}
+            - name: N8N_PORT
+              value: "5678"
             - name: WEBHOOK_URL
               value: "https://{{ .Values.ingress.webhookHost }}/"
             - name: N8N_EDITOR_BASE_URL
