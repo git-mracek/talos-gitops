@@ -92,6 +92,7 @@ spec:
   externalClusters:
     - name: n8n-db-backup
       barmanObjectStore:
+        serverName: "n8n-db"
         destinationPath: s3://mracek-k8s/n8n-backups/ # Cesta ke starým zálohám
         endpointURL: https://fsn1.your-objectstorage.com
         s3Credentials:
