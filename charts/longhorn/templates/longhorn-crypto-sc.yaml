@@ -15,5 +15,3 @@ parameters:
   csi.storage.k8s.io/node-publish-secret-namespace: "longhorn-system"
   csi.storage.k8s.io/node-stage-secret-name: "longhorn-crypto"
   csi.storage.k8s.io/node-stage-secret-namespace: "longhorn-system"
-  csi.storage.k8s.io/resizer-secret-name: "longhorn-crypto"
-  csi.storage.k8s.io/resizer-secret-namespace: "longhorn-system"
