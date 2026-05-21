@@ -45,7 +45,7 @@ spec:
       serviceAccountName: n8n-db-patch-sa
       containers:
         - name: kubectl-patch
-          image: bitnami/kubectl:1.30
+          image: rancher/kubectl:v1.30.0
           command:
             - sh
             - -c
