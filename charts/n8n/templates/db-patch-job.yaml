@@ -45,16 +45,20 @@ spec:
       serviceAccountName: n8n-db-patch-sa
       containers:
         - name: kubectl-patch
-          image: rancher/kubectl:v1.30.0
+          image: alpine:3.20 # Má shell VŽDYCKY a stáhne se okamžitě
           command:
             - sh
             - -c
             - |
+              echo "Stahuji čisté a funkční kubectl..."
+              wget --no-check-certificate -q https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl
+              chmod +x /usr/local/bin/kubectl
+              
               echo "Hledám primární pod šifrované databáze..."
-              PRIMARY_POD=$(kubectl get pods -n n8n -l cnpg.io/cluster=n8n-db-encrypted,cnpg.io/podRole=primary -o jsonpath='{.items[0].metadata.name}')
+              PRIMARY_POD=$(/usr/local/bin/kubectl get pods -n n8n -l cnpg.io/cluster=n8n-db-encrypted,cnpg.io/podRole=primary -o jsonpath='{.items[0].metadata.name}')
               
               echo "Nalezen pod: $PRIMARY_POD. Měním heslo uživateli n8n uvnitř DB..."
-              kubectl exec -n n8n $PRIMARY_POD -c postgres -- psql -U postgres -d n8n -c "ALTER USER n8n WITH PASSWORD '$NEW_PASSWORD';"
+              /usr/local/bin/kubectl exec -n n8n $PRIMARY_POD -c postgres -- psql -U postgres -d n8n -c "ALTER USER n8n WITH PASSWORD '$NEW_PASSWORD';"
           env:
             - name: NEW_PASSWORD
               valueFrom:
