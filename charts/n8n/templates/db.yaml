@@ -6,6 +6,14 @@ metadata:
 spec:
   instances: 3
 
+  managed:
+    roles:
+      - name: n8n
+        ensure: present
+        login: true
+        passwordSecret:
+          name: n8n-db-encrypted-user-secret
+
   bootstrap:
     recovery:
       source: n8n-db-backup
