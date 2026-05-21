@@ -1,0 +1,65 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: n8n-db-patch-sa
+  namespace: n8n
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: n8n-db-patch-role
+  namespace: n8n
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: n8n-db-patch-rb
+  namespace: n8n
+subjects:
+  - kind: ServiceAccount
+    name: n8n-db-patch-sa
+    namespace: n8n
+roleRef:
+  kind: Role
+  name: n8n-db-patch-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: n8n-db-password-force-sync
+  namespace: n8n
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      serviceAccountName: n8n-db-patch-sa
+      containers:
+        - name: kubectl-patch
+          image: bitnami/kubectl:1.30
+          command:
+            - sh
+            - -c
+            - |
+              echo "Hledám primární pod šifrované databáze..."
+              PRIMARY_POD=$(kubectl get pods -n n8n -l cnpg.io/cluster=n8n-db-encrypted,cnpg.io/podRole=primary -o jsonpath='{.items[0].metadata.name}')
+              
+              echo "Nalezen pod: $PRIMARY_POD. Měním heslo uživateli n8n uvnitř DB..."
+              kubectl exec -n n8n $PRIMARY_POD -c postgres -- psql -U postgres -d n8n -c "ALTER USER n8n WITH PASSWORD '$NEW_PASSWORD';"
+          env:
+            - name: NEW_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: n8n-db-encrypted-user-secret
+                  key: password
+      restartPolicy: OnFailure
+  backoffLimit: 3
