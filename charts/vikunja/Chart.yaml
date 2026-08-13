@@ -1,0 +1,8 @@
+apiVersion: v2
+name: vikunja-wrapper
+description: A Helm chart wrapper for Vikunja (official go-vikunja/helm-chart) with CNPG database
+version: 1.0.0
+dependencies:
+  - name: vikunja
+    version: "2.0.0"
+    repository: "oci://ghcr.io/go-vikunja/helm-chart"

@@ -1,0 +1,54 @@
+vikunja:
+  vikunja:
+    image:
+      repository: vikunja/vikunja
+      tag: "2.5.0"
+    persistence:
+      data:
+        enabled: true
+        storageClass: longhorn-crypto
+        size: 5Gi
+      database:
+        enabled: false
+    ingress:
+      main:
+        enabled: true
+        ingressClassName: nginx
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-prod
+          nginx.ingress.kubernetes.io/proxy-body-size: "0"
+        hosts:
+          - host: vikunja.mracek.dev
+            paths:
+              - path: /
+        tls:
+          - hosts:
+              - vikunja.mracek.dev
+            secretName: vikunja-tls
+    configMaps:
+      config:
+        enabled: true
+        data:
+          config.yml: |
+            service:
+              publicurl: "https://vikunja.mracek.dev"
+    env:
+      VIKUNJA_DATABASE_TYPE: postgres
+      VIKUNJA_DATABASE_HOST: vikunja-db-rw
+      VIKUNJA_DATABASE_DATABASE: vikunja
+      VIKUNJA_DATABASE_USER:
+        valueFrom:
+          secretKeyRef:
+            name: vikunja-db-user-secret
+            key: username
+      VIKUNJA_DATABASE_PASSWORD:
+        valueFrom:
+          secretKeyRef:
+            name: vikunja-db-user-secret
+            key: password
+      VIKUNJA_SERVICE_JWTSECRET:
+        valueFrom:
+          secretKeyRef:
+            name: vikunja-secrets
+            key: jwt-secret
+  additionalObjects: []
