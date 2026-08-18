@@ -4,5 +4,5 @@ description: A Helm chart wrapper for deploying the Bitnami Sealed Secrets contr
 version: 1.0.0
 dependencies:
   - name: sealed-secrets
-    version: 2.19.1
+    version: 2.19.2
     repository: https://bitnami.github.io/sealed-secrets
