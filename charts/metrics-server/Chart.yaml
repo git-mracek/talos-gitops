@@ -4,5 +4,5 @@ description: A Helm chart wrapper for deploying Kubernetes Metrics Server
 version: 1.0.0
 dependencies:
   - name: metrics-server
-    version: 3.13.1
+    version: 3.14.0
     repository: https://kubernetes-sigs.github.io/metrics-server/
