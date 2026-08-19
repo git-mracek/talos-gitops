@@ -1,7 +1,7 @@
 # Tuwunel (matrix) server
 image:
   repository: "ghcr.io/matrix-construct/tuwunel"
-  tag: "v1.8.3"
+  tag: "v1.9.0"
 
 ingress:
   host: "matrix.mracek.dev"
