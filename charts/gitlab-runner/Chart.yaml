@@ -4,5 +4,5 @@ version: 1.0.0
 description: GitLab Runner pro Talos K8s CI/CD
 dependencies:
   - name: gitlab-runner
-    version: 0.91.2
+    version: 0.92.0
     repository: https://charts.gitlab.io
