@@ -29,6 +29,18 @@ spec:
       path: kubernetes
       directory:
         include: "kubernetes.yml"
+    # 4) CRD: KeycloakOidcClient (nová v 26.7.x)
+    - repoURL: https://github.com/keycloak/keycloak-k8s-resources.git
+      targetRevision: 26.7.2
+      path: kubernetes
+      directory:
+        include: "keycloakoidcclients.k8s.keycloak.org-v1.yml"
+    # 5) CRD: KeycloakSamlClient (nová v 26.7.x)
+    - repoURL: https://github.com/keycloak/keycloak-k8s-resources.git
+      targetRevision: 26.7.2
+      path: kubernetes
+      directory:
+        include: "keycloaksamlclients.k8s.keycloak.org-v1.yml"
   destination:
     server: https://kubernetes.default.svc
     # Operátor sleduje namespace, ve kterém běží. Keycloak CR proto MUSÍ být
