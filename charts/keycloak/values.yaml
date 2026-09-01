@@ -1,0 +1,8 @@
+ingress:
+  mainHost: "keycloak.mracek.dev"
+  className: "nginx"
+  clusterIssuer: "letsencrypt-prod"
+
+db:
+  storageClass: "longhorn-cnpg"
+  storageSize: "2Gi"
