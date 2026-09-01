@@ -10,6 +10,8 @@ spec:
       - name: keycloak
         ensure: present
         login: true
+        connectionLimit: -1
+        inherit: true
         passwordSecret:
           name: keycloak-db-credentials
 
