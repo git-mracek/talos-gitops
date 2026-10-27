@@ -1,0 +1,8 @@
+apiVersion: v2
+name: zot-wrapper
+description: A Helm chart wrapper for zot OCI registry (official project-zot/helm-charts)
+version: 1.0.0
+dependencies:
+  - name: zot
+    version: "0.1.128"
+    repository: "https://zotregistry.dev/helm-charts"
