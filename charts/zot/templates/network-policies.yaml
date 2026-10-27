@@ -1,0 +1,96 @@
+# =============================================================
+# NetworkPolicies pro namespace: zot
+# =============================================================
+
+# 1. Výchozí pravidlo – zahoď veškerý nevyžádaný provoz
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: zot
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+
+# 2. Povol DNS
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dns-egress
+  namespace: zot
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+
+# 3. Povol ingress z ingress-nginx na zot (port 5000)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-ingress-nginx
+  namespace: zot
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: zot
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 5000
+          protocol: TCP
+
+# 4. Povol Prometheus scraping z monitoring namespace (/metrics na 5000)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring-scrape
+  namespace: zot
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: zot
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - port: 5000
+          protocol: TCP
+
+# 5. Povol odchozí 443 (stahování Trivy CVE DB z ghcr.io, případně sync/mirror)
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-app-internet-egress
+  namespace: zot
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: zot
+  policyTypes:
+    - Egress
+  egress:
+    - ports:
+        - port: 443
+          protocol: TCP

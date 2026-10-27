@@ -1,0 +1,112 @@
+zot:
+  replicaCount: 1
+
+  # image.tag = default chartu (v2.1.22), není třeba přepisovat
+
+  service:
+    type: ClusterIP   # default chartu je NodePort
+    port: 5000
+
+  ingress:
+    enabled: true
+    className: nginx
+    pathtype: Prefix
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      nginx.ingress.kubernetes.io/proxy-body-size: "0"
+      nginx.ingress.kubernetes.io/proxy-request-buffering: "off"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "600"
+    hosts:
+      - host: zot.mracek.dev
+        paths:
+          - path: /
+    tls:
+      - hosts:
+          - zot.mracek.dev
+        secretName: zot-tls
+
+  # persistence: true -> chart renderuje StatefulSet s volumeClaimTemplates
+  # (PVC se bude jmenovat zot-pvc-zot-0)
+  persistence: true
+  pvc:
+    create: true
+    accessModes: ["ReadWriteOnce"]
+    storage: 20Gi
+    storageClassName: longhorn-crypto
+
+  # htpasswd ze SealedSecretu, mountnutý přes nativní externalSecrets chartu
+  mountSecret: false
+  externalSecrets:
+    - secretName: zot-htpasswd
+      mountPath: /secret
+
+  mountConfig: true
+  configFiles:
+    config.json: |-
+      {
+        "distSpecVersion": "1.1.1",
+        "storage": {
+          "rootDirectory": "/var/lib/registry",
+          "dedupe": true,
+          "gc": true,
+          "gcDelay": "1h",
+          "gcInterval": "24h"
+        },
+        "http": {
+          "address": "0.0.0.0",
+          "port": "5000",
+          "readTimeout": "60s",
+          "writeTimeout": "60s",
+          "externalUrl": "https://zot.mracek.dev",
+          "compat": ["docker2s2"],
+          "auth": {
+            "htpasswd": {
+              "path": "/secret/htpasswd"
+            },
+            "failDelay": 5
+          },
+          "accessControl": {
+            "repositories": {
+              "**": {
+                "policies": [
+                  {
+                    "users": ["pull"],
+                    "actions": ["read"]
+                  }
+                ],
+                "defaultPolicy": [],
+                "anonymousPolicy": []
+              }
+            },
+            "adminPolicy": {
+              "users": ["admin"],
+              "actions": ["read", "create", "update", "delete"]
+            }
+          }
+        },
+        "log": {
+          "level": "info"
+        },
+        "extensions": {
+          "search": {
+            "enable": true,
+            "cve": {
+              "updateInterval": "24h"
+            }
+          },
+          "ui": {
+            "enable": true
+          },
+          "scrub": {
+            "enable": true,
+            "interval": "24h"
+          },
+          "metrics": {
+            "enable": true,
+            "prometheus": {
+              "path": "/metrics"
+            }
+          }
+        }
+      }
