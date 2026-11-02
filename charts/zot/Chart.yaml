@@ -4,5 +4,5 @@ description: A Helm chart wrapper for zot OCI registry (official project-zot/hel
 version: 1.0.0
 dependencies:
   - name: zot
-    version: "0.1.128"
+    version: "0.1.130"
     repository: "https://zotregistry.dev/helm-charts"
